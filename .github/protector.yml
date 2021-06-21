@@ -1,0 +1,15 @@
+patterns:
+  - main
+
+requiredApprovingReviewCount: 1
+allowsDeletions: false
+allowsForcePushes: false
+dismissesStaleReviews: true
+isAdminEnforced: true
+requiresApprovingReviews: true
+requiresLinearHistory: true
+restrictsPushes: true
+requiresStrictStatusChecks: true
+pushActors: ['@m19c']
+requiresStatusChecks: true
+requiredStatusCheckContexts: ['build']

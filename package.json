@@ -1,45 +1,62 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "protector",
   "private": true,
-  "description": "TypeScript template action",
-  "main": "lib/main.js",
+  "main": "dist/build/main.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm-run-all build:type build:transpile build:release",
+    "build:type": "apollo codegen:generate --includes './src/**/*' --target typescript --localSchemaFile './schema.json' --globalTypesFile './src/global.ts'",
+    "build:transpile": "tsc",
+    "build:release": "ncc build dist/build/main.js --source-map --license licenses.txt -o dist/release",
+    "schema:download": "apollo client:download-schema",
     "format": "prettier --write **/*.ts",
-    "format-check": "prettier --check **/*.ts",
-    "lint": "eslint src/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt",
-    "test": "jest",
-    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+    "test": "npm-run-all test:lint test:unit",
+    "test:unit": "jest",
+    "test:lint": "eslint src/**/*.ts",
+    "all": "npm-run-all build test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/m19c/protector.git"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "setup",
+    "branch",
+    "protection",
+    "github"
   ],
-  "author": "",
+  "author": "Marc \"m19c\" Binder <marcandrebinder+github@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.4.0",
+    "@apollo/client": "^3.3.20",
+    "@octokit/graphql": "^4.6.4",
+    "cross-fetch": "^3.1.4",
+    "deepmerge": "^4.2.2",
+    "graphql": "^15.5.1",
+    "lodash.clone": "^4.5.0",
+    "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.15",
-    "@types/node": "^14.14.9",
-    "@typescript-eslint/parser": "^4.8.1",
-    "@vercel/ncc": "^0.25.1",
-    "eslint": "^7.17.0",
-    "eslint-plugin-github": "^4.1.1",
-    "eslint-plugin-jest": "^24.1.3",
-    "jest": "^26.6.3",
-    "jest-circus": "^26.6.3",
-    "js-yaml": "^3.14.0",
-    "prettier": "2.2.1",
-    "ts-jest": "^26.4.4",
-    "typescript": "^4.1.3"
+    "@types/deepmerge": "^2.2.0",
+    "@types/jest": "^26.0.23",
+    "@types/lodash.clone": "^4.5.6",
+    "@types/node": "^14.17.3",
+    "@types/react": "^17.0.11",
+    "@types/yaml": "^1.9.7",
+    "@typescript-eslint/parser": "^4.28.0",
+    "@vercel/ncc": "^0.28.6",
+    "apollo": "^2.33.4",
+    "eslint": "^7.29.0",
+    "eslint-plugin-github": "^4.1.3",
+    "eslint-plugin-jest": "^24.3.6",
+    "jest": "^27.0.4",
+    "jest-circus": "^27.0.4",
+    "js-yaml": "^4.1.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.3.1",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.3.4"
   }
 }

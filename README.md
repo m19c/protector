@@ -1,105 +1,115 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+# protector
 
-# Create a JavaScript Action using TypeScript
+Enforcing [Branch Protection Rules](https://docs.github.com/en/github/administering-a-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) can sometimes be painful.
+In teams neither the visibility nor the ability to change protection rules is always given. Allowing individuals and teams to view and adjust them makes every workflow more transparent. `protector` enforces "branch protection as code" just the way we're working in modern software development.
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+## Getting started
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+1. Create a new workflow file (e.g. `.github/workflows/protector.yml`):
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+   ```yaml
+   name: protector
+   on: push
 
-## Create an action from this template
+   jobs:
+     test:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - uses: m19c/protector
+   ```
 
-Click the `Use this Template` and provide the new repo details for your action
+1. Generate a `protector.yml` file inside `.github/`. It is also possible to configure the location of your configuration file by passing `config` (`with: { config: "path/to/my/config.yml" }`).
 
-## Code in Main
+   ```yaml
+   patterns:
+     - dev
+     - master
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+   allowsDeletions: false
 
-Install the dependencies  
-```bash
-$ npm install
-```
+   overrides:
+     dev:
+       requiresLinearHistory: true
+     master:
+       isAdminEnforced: true
+       reviewDismissalActors:
+         - @m19c
+   ```
 
-Build the typescript and package it for distribution
-```bash
-$ npm run build && npm run package
-```
+1. Push the changes.
+1. Profit!
 
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
+## Configuration
 
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
+| Property    | Description                                                      | Example             |
+| ----------- | ---------------------------------------------------------------- | ------------------- |
+| `patterns`  | List of patterns to match the actual branches.                   | `['dev', 'master']` |
+| `...`       | Any of _RuleSet_.                                                | -                   |
+| `overrides` | Map of _RuleSet_ overrides to be more specific in certain cases. | -                   |
 
-...
-```
+### RuleSet
 
-## Change action.yml
+| Property                       | Type            | Description                                                                                            |
+| ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------ |
+| `allowsDeletions`              | `boolean`       | Can this branch be deleted.                                                                            |
+| `allowsForcePushes`            | `boolean`       | Are force pushes allowed on this branch.                                                               |
+| `dismissesStaleReviews`        | `boolean`       | Will new commits pushed to matching branches dismiss pull request review approvals.                    |
+| `isAdminEnforced`              | `boolean`       | Can admins overwrite branch protection.                                                                |
+| `requiredApprovingReviewCount` | `boolean`       | Number of approving reviews required to update matching branches.                                      |
+| `requiresApprovingReviews`     | `boolean`       | Are approving reviews required to update matching branches.                                            |
+| `requiresCodeOwnerReviews`     | `boolean`       | Are reviews from code owners required to update matching branches.                                     |
+| `requiresCommitSignatures`     | `boolean`       | Are commits required to be signed.                                                                     |
+| `requiresLinearHistory`        | `boolean`       | Are merge commits prohibited from being pushed to this branch.                                         |
+| `restrictsReviewDismissals`    | `boolean`       | Is dismissal of pull request reviews restricted.                                                       |
+| `restrictsPushes`              | `boolean`       | Is pushing to matching branches restricted.                                                            |
+| `requiredStatusCheckContexts`  | `boolean`       | List of required status check contexts that must pass for commits to be accepted to matching branches. |
+| `requiresStatusChecks`         | `boolean`       | Are status checks required to update matching branches.                                                |
+| `requiresStrictStatusChecks`   | `Array<string>` | Are branches required to be up to date before merging.                                                 |
+| `reviewDismissalActors`        | `Array<string>` | A list of User (`@<username>`) and / or Team (`#<team>`) allowed to dismiss pull requests.             |
+| `pushActors`                   | `Array<string>` | A list of User (`@<username>`) and / or Team (`#<team>`) allowed to push to matching branches.         |
 
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
+### Real World Example
 
 ```yaml
-uses: ./
-with:
-  milliseconds: 1000
+patterns:
+  - dev
+  - staging
+  - master
+
+allowsDeletions: false
+allowsForcePushes: false
+dismissesStaleReviews: true
+isAdminEnforced: true
+requiredApprovingReviewCount: 1
+requiresApprovingReviews: true
+requiresCodeOwnerReviews: true
+requiresCommitSignatures: true
+requiresLinearHistory: true
+restrictsReviewDismissals: false
+restrictsPushes: true
+pushActors:
+  - '#developer'
+requiresStatusChecks: true
+requiredStatusCheckContexts:
+  - continuous-integration/jenkins/branch
+requiresStrictStatusChecks: true
+reviewDismissalActors:
+  - '#developer'
+
+overrides:
+  master:
+    requiredApprovingReviewCount: 2
 ```
 
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
+## Known limitations
 
-## Usage:
+- Both `reviewDismissalActors` as well as `pushActors` are limited to `100` items.
+- `reviewDismissalActors` and `pushActors` can only hold Teams / Users.
+- Some options are only available for organizations either with or without Team / Enterprise plan.
+- Strict pattern checks: GitHub offers dynamic branch matching, for example `v*` will match branches like `v1`, `v2` and so on. However, `protector` is only able to match patterns equally.
 
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+## Require Token Scopes
+
+- `repo`
+- `read:org`
