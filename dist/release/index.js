@@ -764,7 +764,7 @@ function run() {
         }
         catch (err) {
             if (err instanceof Error) {
-                core.debug(err.stack || err.message);
+                core.info(err.stack || err.message);
             }
             core.setFailed(err.message);
         }
