@@ -11,5 +11,5 @@ requiresLinearHistory: true
 restrictsPushes: true
 requiresStrictStatusChecks: true
 pushActors: ['@m19c']
-# requiresStatusChecks: true
-# requiredStatusCheckContexts: []
+requiresStatusChecks: true
+requiredStatusCheckContexts: ['build']

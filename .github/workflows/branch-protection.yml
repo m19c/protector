@@ -1,0 +1,8 @@
+on:
+  push:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./
