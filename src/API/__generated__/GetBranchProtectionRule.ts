@@ -11,6 +11,10 @@ export interface GetBranchProtectionRule_repository_branchProtectionRules_edges_
   __typename: "BranchProtectionRule";
   id: string;
   /**
+   * Identifies the protection rule pattern.
+   */
+  pattern: string;
+  /**
    * Can this branch be deleted.
    */
   allowsDeletions: boolean;
@@ -27,17 +31,9 @@ export interface GetBranchProtectionRule_repository_branchProtectionRules_edges_
    */
   isAdminEnforced: boolean;
   /**
-   * Identifies the protection rule pattern.
-   */
-  pattern: string;
-  /**
    * Number of approving reviews required to update matching branches.
    */
   requiredApprovingReviewCount: number | null;
-  /**
-   * List of required status check contexts that must pass for commits to be accepted to matching branches.
-   */
-  requiredStatusCheckContexts: (string | null)[] | null;
   /**
    * Are approving reviews required to update matching branches.
    */
@@ -55,17 +51,25 @@ export interface GetBranchProtectionRule_repository_branchProtectionRules_edges_
    */
   requiresLinearHistory: boolean;
   /**
-   * Are status checks required to update matching branches.
+   * Is dismissal of pull request reviews restricted.
    */
-  requiresStatusChecks: boolean;
+  restrictsReviewDismissals: boolean;
   /**
    * Is pushing to matching branches restricted.
    */
   restrictsPushes: boolean;
   /**
-   * Is dismissal of pull request reviews restricted.
+   * List of required status check contexts that must pass for commits to be accepted to matching branches.
    */
-  restrictsReviewDismissals: boolean;
+  requiredStatusCheckContexts: (string | null)[] | null;
+  /**
+   * Are status checks required to update matching branches.
+   */
+  requiresStatusChecks: boolean;
+  /**
+   * Are branches required to be up to date before merging.
+   */
+  requiresStrictStatusChecks: boolean;
 }
 
 export interface GetBranchProtectionRule_repository_branchProtectionRules_edges {

@@ -38,18 +38,27 @@ async function run(): Promise<void> {
       )
     }
 
-    const current = await api.findBranchProtectionByPattern(environment.branch)
+    const branchProtection = api.extractBranchProtectionRuleByPattern(
+      repository,
+      environment.branch
+    )
+
+    const current = config.translate(branchProtection)
     const desired = extractByPattern(specification, environment.branch)
 
     if (
       !specification.patterns?.includes(environment.branch) &&
-      current !== null
+      branchProtection !== null
     ) {
       core.info(
-        `deleting branch protection rule for ${environment.branch} (${current.id})`
+        `deleting branch protection rule for ${environment.branch} (${branchProtection.id})`
       )
-      await api.deleteBranchProtectionRuleByID(current.id)
-    } else if (current !== null && desired !== null) {
+      await api.deleteBranchProtectionRuleByID(branchProtection.id)
+    } else if (
+      branchProtection !== null &&
+      current !== null &&
+      desired !== null
+    ) {
       const patch = diff(current, desired)
       if (patch !== null) {
         core.info(
@@ -57,14 +66,17 @@ async function run(): Promise<void> {
             environment.branch
           } to ${JSON.stringify(patch)}`
         )
-        await api.updateBranchProtectionRuleByID(current.id, patch)
+        await api.updateBranchProtectionRuleByID(
+          repository,
+          branchProtection.id,
+          patch
+        )
       } else {
         core.info(`nothing to change on ${environment.branch}`)
       }
     } else if (current === null && desired !== null) {
-      console.log('create prot')
       await api.createBranchProtectionRule(
-        repository.id,
+        repository,
         environment.branch,
         desired
       )
@@ -78,25 +90,11 @@ async function run(): Promise<void> {
     core.info('completed')
   } catch (err) {
     if (err instanceof Error) {
-      console.log(err.stack)
+      core.debug(err.stack || err.message)
     }
+
     core.setFailed(err.message)
   }
-
-  /*
-  try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    core.setFailed(error.message)
-  }
-  */
 }
 
 run()

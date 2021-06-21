@@ -1,31 +1,34 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "protector",
   "private": true,
-  "description": "TypeScript template action",
-  "main": "lib/main.js",
+  "main": "dist/build/main.js",
   "scripts": {
-    "build": "npm-run-all build:type build:transpile",
+    "build": "npm-run-all build:type build:transpile build:release",
     "build:type": "apollo codegen:generate --includes './src/**/*' --target typescript --localSchemaFile './schema.json' --globalTypesFile './src/global.ts'",
     "build:transpile": "tsc",
+    "build:release": "ncc build dist/build/main.js --source-map --license licenses.txt -o dist/release",
     "schema:download": "apollo client:download-schema",
     "format": "prettier --write **/*.ts",
-    "format-check": "prettier --check **/*.ts",
-    "lint": "eslint src/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt",
-    "test": "jest",
-    "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
+    "test": "npm-run-all test:lint test:unit",
+    "test:unit": "jest",
+    "test:lint": "npm-run-all lint:formatting lint:es",
+    "test:lint:formatting": "prettier --check **/*.ts",
+    "test:lint:es": "eslint src/**/*.ts",
+    "all": "npm-run-all build test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/m19c/protector.git"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "setup",
+    "branch",
+    "protection",
+    "github"
   ],
-  "author": "",
+  "author": "Marc \"m19c\" Binder <marcandrebinder+github@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
@@ -34,11 +37,13 @@
     "cross-fetch": "^3.1.4",
     "deepmerge": "^4.2.2",
     "graphql": "^15.5.0",
+    "lodash.clone": "^4.5.0",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@types/deepmerge": "^2.2.0",
     "@types/jest": "^26.0.15",
+    "@types/lodash.clone": "^4.5.6",
     "@types/node": "^14.14.9",
     "@types/react": "^17.0.11",
     "@types/yaml": "^1.9.7",

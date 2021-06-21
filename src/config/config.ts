@@ -1,9 +1,12 @@
 import {readFile, readdir} from 'fs'
 import {promisify} from 'util'
 import merge from 'deepmerge'
-
+import clone from 'lodash.clone'
 import YAML from 'yaml'
+
 import {Protection, Specification} from './types'
+import * as util from '../util'
+import {BranchProtectionRule} from '../API/__generated__/BranchProtectionRule'
 
 const awaitableReadFile = promisify(readFile)
 const awaitableReadDir = promisify(readdir)
@@ -30,6 +33,8 @@ export async function load(path?: string): Promise<Specification> {
 }
 
 const wellKnownLocations = [
+  'protector.yml',
+  'protector.yaml',
   'branch_protection.yml',
   'branch_protection.yaml',
   'protection.yml',
@@ -48,6 +53,61 @@ async function determineWellKnownPath(): Promise<null | string> {
 }
 
 /**
+ * Translates the given BranchProtectionRule to an internal Protection.
+ */
+export function translate(
+  rule: null | BranchProtectionRule
+): null | Protection {
+  if (!rule) {
+    return null
+  }
+
+  const {
+    reviewDismissalAllowances,
+    pushAllowances,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    __typename,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    id,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    pattern,
+    ...rest
+  } = rule
+
+  return {
+    ...rest,
+    requiredStatusCheckContexts: rest.requiredStatusCheckContexts
+      ? clone(rest.requiredStatusCheckContexts)
+      : [],
+    reviewDismissalActors: (reviewDismissalAllowances.edges || [])
+      .reduce((accumulator, edge) => {
+        const actor = edge?.node?.actor
+        if (actor?.__typename === 'User') {
+          return [...accumulator, `@${actor.userHandle}`]
+        } else if (actor?.__typename === 'Team') {
+          return [...accumulator, `#${actor.teamHandle}`]
+        }
+
+        return accumulator
+      }, [] as string[])
+      .filter(util.filterUnique),
+    pushActors: (pushAllowances.edges || [])
+      .reduce((accumulator, edge) => {
+        const actor = edge?.node?.actor
+
+        if (actor?.__typename === 'User') {
+          return [...accumulator, `@${actor.userHandle}`]
+        } else if (actor?.__typename === 'Team') {
+          return [...accumulator, `#${actor.teamHandle}`]
+        }
+
+        return accumulator
+      }, [] as string[])
+      .filter(util.filterUnique)
+  }
+}
+
+/**
  * Determines the actual `Specification` for the passed `search` `Pattern`.
  *
  * @param specification
@@ -61,7 +121,15 @@ export function extractByPattern(
     return null
   }
 
-  return Object.freeze(merge(rest, (overrides || {})[search]))
+  const matched = merge(rest, (overrides || {})[search])
+  matched.pushActors = matched.pushActors.filter(util.filterUnique)
+  matched.reviewDismissalActors = matched.reviewDismissalActors.filter(
+    util.filterUnique
+  )
+  matched.requiredStatusCheckContexts =
+    matched.requiredStatusCheckContexts?.filter(util.filterUnique) || []
+
+  return Object.freeze(matched)
 }
 
 const defaultSpecification: Protection = {
@@ -70,14 +138,17 @@ const defaultSpecification: Protection = {
   allowsForcePushes: false,
   dismissesStaleReviews: false,
   isAdminEnforced: false,
-  requiredStatusCheckContexts: [],
   requiresApprovingReviews: false,
   requiresCodeOwnerReviews: false,
   requiresCommitSignatures: false,
   requiresLinearHistory: false,
   requiresStatusChecks: false,
   restrictsPushes: false,
-  restrictsReviewDismissals: false
+  restrictsReviewDismissals: false,
+  requiresStrictStatusChecks: false,
+  requiredStatusCheckContexts: [],
+  reviewDismissalActors: [],
+  pushActors: []
 }
 
 function isEqual(current: unknown, desired: unknown): boolean {
@@ -111,7 +182,7 @@ export function diff(
     }
 
     if (!(key in desired) && key in current) {
-      return {...accumulator, [key]: defaultSpecification[key]}
+      return {...accumulator, [key]: clone(defaultSpecification[key])}
     }
 
     return accumulator

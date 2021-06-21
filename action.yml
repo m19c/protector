@@ -1,10 +1,10 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'protector'
+description: 'protector enforces branch protection as code just the way we are working in modern software development.'
+author: 'Marc "m19c" Binder <marcandrebinder+github@gmail.com>'
 inputs:
   config:
     required: false
     description: 'the configuration file'
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'dist/release/index.js'
