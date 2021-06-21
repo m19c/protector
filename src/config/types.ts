@@ -73,11 +73,11 @@ export interface Protection
   pushActors: string[]
 }
 
-export interface Specification extends Protection {
+export interface Specification extends Partial<Protection> {
   /**
    * A list of matching branch patterns.
    */
   patterns?: Pattern[]
 
-  overrides?: Record<Pattern, Protection>
+  overrides?: Record<Pattern, Partial<Protection>>
 }

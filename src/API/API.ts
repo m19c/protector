@@ -41,7 +41,6 @@ import {
   GetActorUserVariables,
   GetActorUser_user
 } from './__generated__/GetActorUser'
-import {GetActorTeams} from './__generated__/GetActorTeams'
 import {
   GetActorTeam,
   GetActorTeamVariables,

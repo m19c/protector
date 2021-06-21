@@ -146,10 +146,16 @@ function extractByPattern(_a, search) {
         return null;
     }
     const matched = deepmerge_1.default(rest, (overrides || {})[search]);
-    matched.pushActors = matched.pushActors.filter(util.filterUnique);
-    matched.reviewDismissalActors = matched.reviewDismissalActors.filter(util.filterUnique);
-    matched.requiredStatusCheckContexts =
-        ((_b = matched.requiredStatusCheckContexts) === null || _b === void 0 ? void 0 : _b.filter(util.filterUnique)) || [];
+    if (matched.pushActors) {
+        matched.pushActors = matched.pushActors.filter(util.filterUnique);
+    }
+    if (matched.reviewDismissalActors) {
+        matched.reviewDismissalActors = matched.reviewDismissalActors.filter(util.filterUnique);
+    }
+    if (matched.requiredStatusCheckContexts) {
+        matched.requiredStatusCheckContexts =
+            ((_b = matched.requiredStatusCheckContexts) === null || _b === void 0 ? void 0 : _b.filter(util.filterUnique)) || [];
+    }
     return Object.freeze(matched);
 }
 exports.extractByPattern = extractByPattern;

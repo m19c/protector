@@ -122,12 +122,21 @@ export function extractByPattern(
   }
 
   const matched = merge(rest, (overrides || {})[search])
-  matched.pushActors = matched.pushActors.filter(util.filterUnique)
-  matched.reviewDismissalActors = matched.reviewDismissalActors.filter(
-    util.filterUnique
-  )
-  matched.requiredStatusCheckContexts =
-    matched.requiredStatusCheckContexts?.filter(util.filterUnique) || []
+
+  if (matched.pushActors) {
+    matched.pushActors = matched.pushActors.filter(util.filterUnique)
+  }
+
+  if (matched.reviewDismissalActors) {
+    matched.reviewDismissalActors = matched.reviewDismissalActors.filter(
+      util.filterUnique
+    )
+  }
+
+  if (matched.requiredStatusCheckContexts) {
+    matched.requiredStatusCheckContexts =
+      matched.requiredStatusCheckContexts?.filter(util.filterUnique) || []
+  }
 
   return Object.freeze(matched)
 }
@@ -164,8 +173,8 @@ function isEqual(current: unknown, desired: unknown): boolean {
 }
 
 export function diff(
-  current: Protection,
-  desired: Protection
+  current: Partial<Protection>,
+  desired: Partial<Protection>
 ): null | Protection {
   const keys = [
     ...(Object.keys(current) as (keyof Protection)[]),

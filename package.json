@@ -11,9 +11,7 @@
     "format": "prettier --write **/*.ts",
     "test": "npm-run-all test:lint test:unit",
     "test:unit": "jest",
-    "test:lint": "npm-run-all lint:formatting lint:es",
-    "test:lint:formatting": "prettier --check **/*.ts",
-    "test:lint:es": "eslint src/**/*.ts",
+    "test:lint": "eslint src/**/*.ts",
     "all": "npm-run-all build test"
   },
   "repository": {
