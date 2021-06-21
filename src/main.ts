@@ -90,7 +90,7 @@ async function run(): Promise<void> {
     core.info('completed')
   } catch (err) {
     if (err instanceof Error) {
-      core.debug(err.stack || err.message)
+      core.info(err.stack || err.message)
     }
 
     core.setFailed(err.message)
