@@ -1,0 +1,12 @@
+patterns:
+  - v1
+
+requiredApprovingReviewCount: 1
+allowsDeletions: false
+allowsForcePushes: false
+dismissesStaleReviews: true
+requiresApprovingReviews: true
+requiresLinearHistory: true
+requiresStrictStatusChecks: true
+requiresStatusChecks: true
+requiredStatusCheckContexts: ['build']

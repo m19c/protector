@@ -1,0 +1,12 @@
+name: enforce-protection
+on:
+  push:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          token: ${{ secrets.PROTECTOR_TOKEN }}
